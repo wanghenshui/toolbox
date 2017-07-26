@@ -19,10 +19,10 @@ read MSO_IP
 
 echo "DMR mode 1 for dmr and 0 for pdt :"
 read DMR
-
+datename=$(date +%Y%m%d-%H%M%S) 
 cur='/opt/local/bin/VOS/cur/data'
 if [ -e $cur/VOS.Config.db ] ; then
-cp $cur/VOS.Config.db $cur/VOS.Config.db.bak
+cp $cur/VOS.Config.db $cur/VOS.Config.db.$datename.bak
 else
 echo "db doesn't exist"
 exit
