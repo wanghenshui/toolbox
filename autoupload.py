@@ -129,7 +129,9 @@ if __name__=='__main__':
      print("|please enter real ip OR I'll crash for ya|")
      print('|                                         |')
      print('-------------------------------------------')
-     print(u'按照提示输入，按回车结束。')
+     print(u'请将该程序放在上传文件的同级目录下')
+     print(u'程序会将同目录下所有文件上传，所以整准点')
+     print(u'按照提示输入，按回车结束')
      print(u'如果崩溃把日志rtx给w18858或者skype wangqw2ee@outlook.com')
      r=input(u"tsc 数量 (推荐5个以内多了会崩):\n")
      if r == '0':
