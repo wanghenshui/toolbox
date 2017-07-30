@@ -1,10 +1,14 @@
 #!/usr/bin/python3
 #coding=utf-8
+
 import paramiko
-import os
-import datetime  
+import os,sys
+#import datetime  
 import threading
 import logging
+import re 
+import time #sleep
+now = time.strftime("%Y-%m-%d-%H-%M-%S")
 
 local_dir=os.getcwd()
 remote_dir='/opt/local/bin/VOS/cur/' 
@@ -14,6 +18,39 @@ port=22
 
 fmt = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s][%(lineno)d]--%(message)s')
 LOG_FILE = 'autoupload.log'  
+
+
+
+
+class ShellHandler:
+
+    def __init__(self, host, user, psw):
+        self.ssh = paramiko.SSHClient()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.connect(host, username=user, password=psw, port=22)
+
+        self.channel = self.ssh.invoke_shell()
+        #self.stdin = channel.makefile('wb')
+        #self.stdout = channel.makefile('r')
+
+    def __del__(self):
+        self.ssh.close()
+
+    def execute(self, cmd):
+        cmd += '\r'
+        p = re.compile(r'@VOS:~# ')
+        while True:
+            self.channel.send('sudo su\r')
+            self.channel.send(cmd)
+            time.sleep(0.5)
+            result=''
+            ret=self.channel.recv(65535)
+            #ret=ret.decode('utf-8')
+            result+=str(ret)
+            print(result)
+            if p.search(result):
+                print ("execute finished")
+                break
 
 
 
@@ -31,6 +68,16 @@ def upload(local_dir,remote_dir,hostname):
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(fmt)
     log.addHandler(fh)
+
+    log.info('backup start')
+    sh=ShellHandler(hostname,username,password)
+    
+    
+    cmd = 'mv ' + remote_dir  +' /opt/local/bin/VOS/cur-'+str(now)+'/'
+    print (cmd)
+    sh.execute(cmd)
+    
+
     
     t=paramiko.Transport((hostname,port)) 
     try: 
@@ -39,20 +86,20 @@ def upload(local_dir,remote_dir,hostname):
         log.error(e)
         fh.close()
     sftp=paramiko.SFTPClient.from_transport(t)
-    log.info('backup start')
-    
+
     log.info('upload file start  ' )  
     for root,dirs,files in os.walk(local_dir):  
-        log.debug('[%s][%s][%s]' % (root,dirs,files))  
+        #log.debug('[%s][%s][%s]' % (root,dirs,files))  
         for filespath in files:  
             local_file = os.path.join(root,filespath)  
-            log.debug('[%s][%s][%s][%s]' % (root,filespath,local_file,local_dir))  
+            #log.debug('[%s][%s][%s][%s]' % (root,filespath,local_file,local_dir))  
             a = local_file.replace(local_dir,'').replace('\\','/').lstrip('/')  
             log.debug('%s',  remote_dir)  
             remote_file = os.path.join(remote_dir,a)  
             log.debug('%s',remote_file)  
             try:  
-                sftp.put(local_file,remote_file)  
+                sftp.put(local_file,remote_file)
+                log.info('%s uploading',local_file)
             except Exception as e:  
                 sftp.mkdir(os.path.split(remote_file)[0])  
                 sftp.put(local_file,remote_file)  
@@ -78,13 +125,18 @@ def upload(local_dir,remote_dir,hostname):
           
 if __name__=='__main__':
      print('-------------------------------------------')
-     print("|       TSC      AutoUpload               |")
+     print("|           TSC  AutoUpload               |")
      print("|please enter real ip OR I'll crash for ya|")
+     print('|                                         |')
      print('-------------------------------------------')
-     r=input("tsc 数量:\n")
+     print(u'按照提示输入，按回车结束。')
+     print(u'如果崩溃把日志rtx给w18858或者skype wangqw2ee@outlook.com')
+     r=input(u"tsc 数量 (推荐5个以内多了会崩):\n")
+     if r == '0':
+         sys.exit()
      hostname=[]
-     for i in range (0,int(r)):
-         hostname.append(input("tsc  ip:\n"))
+     for i in range (0,int(r)>10 and 10 or int(r)):
+         hostname.append(input(u"tsc ip (没有ip校验，别输错了):\n"))
      threads = []
      for i in hostname:
          try :
@@ -100,6 +152,6 @@ if __name__=='__main__':
          t.start()
     
      t.join()
-     print ('complete %s' %datetime.datetime.now())
+     print ('complete %s' %now)
 
     
