@@ -29,7 +29,7 @@ exit
 fi	
 echo "---------------sqlite3 running--------------"
 sqlite3 $cur/VOS.Config.db <<EOF
-INSERT INTO Tbl_Config (PID,Tag,Key,Value,Comment) VALUES(0,"VOS", "LOGVIEW/MAXCOUNT","10","");
+insert or replace into Tbl_Config (PID,Tag,Key,Value,Comment) VALUES(0,"VOS", "LOGVIEW/MAXCOUNT","10","");
 --update Tbl_Config set Value='0xff004f1f' where Tag='VOS' and Key='LOG/LOGLEVEL'
 update Tbl_Config set Value='2/true/$TSC_IP:8000/$MSO_IP:6088' where Tag='VOS/SERVICES/IServices/TRT'  and Key='23:0';
 update Tbl_Config set Value='2/true/$TSC_IP:8002/$MSO_IP:5002' where Tag='VOS/SERVICES/IServices/TRT' and Key='36:28672';
