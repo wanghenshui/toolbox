@@ -14,6 +14,7 @@ local_dir=os.getcwd()
 remote_dir='/opt/local/bin/VOS/cur/' 
 username='root'  
 password='vos'  
+ppc_password=''
 port=22  
 
 fmt = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s][%(lineno)d]--%(message)s')
@@ -38,7 +39,8 @@ class ShellHandler:
 
     def execute(self, cmd):
         cmd += '\r'
-        p = re.compile(r'@VOS:~# ')
+        tp = re.compile(r'@VOS:~# ')
+        mp = re.compile(r'root@') 
         while True:
             self.channel.send('sudo su\r')
             self.channel.send(cmd)
@@ -47,8 +49,8 @@ class ShellHandler:
             ret=self.channel.recv(65535)
             #ret=ret.decode('utf-8')
             result+=str(ret)
-            print(result)
-            if p.search(result):
+            #print(result)
+            if tp.search(result) or mp.search(result) :
                 print ("execute finished")
                 break
 
@@ -126,19 +128,19 @@ def upload(local_dir,remote_dir,hostname):
 if __name__=='__main__':
      print('-------------------------------------------')
      print("|           TSC  AutoUpload               |")
-     print("|please enter real ip OR I'll crash for ya|")
      print('|                                         |')
      print('-------------------------------------------')
      print(u'请将该程序放在上传文件的同级目录下')
      print(u'程序会将同目录下所有文件上传，所以整准点')
-     print(u'按照提示输入，按回车结束')
      print(u'如果崩溃把日志rtx给w18858或者skype wangqw2ee@outlook.com')
-     r=input(u"tsc 数量 (推荐5个以内多了会崩):\n")
-     if r == '0':
-         sys.exit()
+
      hostname=[]
-     for i in range (0,int(r)>10 and 10 or int(r)):
+     for i in range (0,1):
          hostname.append(input(u"tsc ip (没有ip校验，别输错了):\n"))
+
+     key=input(u"tsc 密码 默认回车:\n")
+     if key != '':
+         password=key
      threads = []
      for i in hostname:
          try :
