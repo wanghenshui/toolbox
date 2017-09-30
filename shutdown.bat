@@ -5,6 +5,6 @@ vmrun.exe suspend "D:\newxp\newxp.vmx"
 
 @echo shutting down
 
-shutdown -s -t 60
+shutdown -s -t 5
 
 @echo off
