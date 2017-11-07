@@ -1,9 +1,9 @@
-#!/usr/bin python3
+#!/usr/bin/python3
 # -*- coding:utf-8 -*-
 import sys
 import os
 import comtypes.client
-import re
+
 
 wdFormatPDF = 17
 
