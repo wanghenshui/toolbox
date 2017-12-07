@@ -1,0 +1,11 @@
+#!/usr/bin/expect
+set timeout 5 
+spawn ssh root@20.0.2.2 -p 22
+expect {
+    "(yes/no)" { send "yes\r"; exp_continue }
+    "password:" { send "likai\r" }
+}
+expect "root@"   {send " cd Br_R6.5_r2676/CCL/RM/Build/RELEASE/ \r" };
+expect "root@"   {send " make -f Makefile_PPC \r" };
+expect "root@"  { send "exit\r" } ;
+#interact
