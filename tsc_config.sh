@@ -1,24 +1,28 @@
 #!/bin/sh
 #if it does't work, dos2unix file and chmod 
 
-if [[ $# == 1  ||  $# -ge 3 ]]; then
-	echo
-	echo "usage:./tsc_config key value "
-	echo "	like: ./tsc_config DMR 1 "
-	echo "	like: ./tsc_config TSC_IP 20.0.0.10 "
-	echo "OR      ./tsc_config"
-	echo "	config all issues  step by step"
-	echo "key: TSC_IP TSC_ID MSO_IP DMR"
-	echo
-	exit
-fi
-
 echo "--------------------------------------------------------"
 echo "|TSC ip config script ,and use for version 5.1 6.0 6.1 |"
-echo "|                                                      |"
-echo "|I don't check the Parameter Validity , so be carefull |"
 echo "--------------------------------------------------------"
-#########################################tool##############################################
+
+#######
+#tool
+#######
+
+print_usage(){
+	echo ""
+	echo "./tsc_config.sh |	 | -a[all] | -s[show] | -h[help] |"
+	echo "usage:"
+	echo "  /tsc_config.sh TO CONFIG ALL"
+	echo "  /tsc_config.sh -a ./tsc_config.sh -a TO CONFIG ALL"
+	echo "  /tsc_config.sh -s OR ./tsc_config.sh show SEE CONFIGURATION"
+	echo "  /tsc_config.sh -h OR ./tsc_config.sh help SEE THIS HELP"
+	echo "special usage: ./tsc_config.sh key value "
+	echo "	like: ./tsc_config.sh DMR 1 "
+	echo "	like: ./tsc_config.sh TSC_IP 20.0.0.10 "
+	echo "	key: TSC_IP TSC_ID MSO_IP DMR"
+	exit
+}
 
 datename=$(date +%Y%m%d-%H%M%S) 
 cur='/opt/local/bin/VOS/cur/data'
@@ -46,7 +50,74 @@ check_ip() {
 		return 1
 	fi
 }
-###########################################################################################
+
+config(){
+## normal config
+	echo "eth0 `ifconfig eth0 | grep 'inet ' | sed s/^.*addr://g | sed s/Bcast.*$//g `"
+	echo "eth1 `ifconfig eth1 | grep 'inet ' | sed s/^.*addr://g | sed s/Bcast.*$//g `"
+
+	read -p "TSC IP enter eth0 OR eth1: " eth
+	if [[ $eth == "eth1" || $eth == "eth0" ]] ; then
+		#eth${sed -n "/^[0-9]\+$/p"}
+		TSC_IP=`ifconfig $eth | grep 'inet ' | sed s/^.*addr://g | sed s/Bcast.*$//g | sed s/[[:space:]]//g`
+	else
+		TSC_IP='20.0.0.2'
+		echo "device  error ,exit !"
+		exit
+	fi
+
+	while true; do
+		read -p "Please enter TSC_ID: " TSC_ID
+		check_number $TSC_ID
+		[ $? -eq 0 ] && break
+	done
+
+	while true; do
+		read -p "Please enter MSO_IP: " MSO_IP
+		check_ip $MSO_IP
+		[ $? -eq 0 ] && break
+	done
+
+	read -p "DMR mode 1 for dmr and 0 for pdt :" DMR
+	check_number $DMR
+	if [ $? -ne 0  ] ; then
+		DMR=0
+	fi
+
+	if [ $DMR -gt 1 ] ; then
+		DMR=0
+		echo "input ERROR and set with PDT"
+	fi
+}
+
+show_config(){
+	#dup
+		echo	"--------------------show configuration----------------"
+		DMR=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='TSC'and Key='DMRCmptMode'")
+		OM_SERVER_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SERVER_IP'")
+		OM_SLAVE_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SLAVE_IP'")
+		AGETN_TSC_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='AGENT_IP'")
+		AGENT_TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='TSC_ID'")
+		TSC_TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ID'")
+		TRT=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='VOS/SERVICES/IServices/TRT' and Key='36:28672'")
+		
+		echo "OM_SERVER_IP " $OM_SERVER_IP
+		echo "OM_SLAVE_IP  " $OM_SLAVE_IP
+		echo "AGETN_TSC_IP " $AGETN_TSC_IP
+		echo "AGENT_TSC_ID " $AGENT_TSC_ID
+		echo "TSC_ID       " $TSC_TSC_ID
+		echo "TSC:MSO_IP   " $TRT
+		echo "DMR MODE     " $DMR
+		echo	"-------------------------------------------------------"
+		exit
+}
+#######
+#entry
+#######
+if [ $# -ge 3 ]; then
+	print_usage
+fi
+
 
 if [ $# -eq 2 ]; then
 ### $2 is key and $3 is value
@@ -71,50 +142,23 @@ if [ $# -eq 2 ]; then
 		echo "DMR changed" $DMR
 	else
 		echo "key not define! exit"
-		exit
+		print_usage
 	fi
-else
-## normal config
-	echo "eth0 `ifconfig eth0 | grep 'inet ' | sed s/^.*addr://g | sed s/Bcast.*$//g `"
-	echo "eth1 `ifconfig eth1 | grep 'inet ' | sed s/^.*addr://g | sed s/Bcast.*$//g `"
-
-	read -p "TSC IP enter eth0 OR eth1: " eth
-	if [[ $eth == "eth1" || $eth == "eth0" ]] ; then
-		#eth${sed -n "/^[0-9]\+$/p"}
-		TSC_IP=`ifconfig $eth | grep 'inet ' | sed s/^.*addr://g | sed s/Bcast.*$//g | sed s/[[:space:]]//g`
+elif [ $# == 1 ];then
+	if [[ $1 == "show" || $1 = "-s" ]];then
+		show_config
+	elif [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];then
+		print_usage
+	elif [[ $1 == "all" || $1 = "-a" ]];then
+		config
 	else
-		TSC_IP='20.0.0.2'
-		echo "device  error ,exit !"
+		echo "./tsc_config.h -h for help"
 		exit
 	fi
-
-
-
-	while true; do
-		read -p "Please enter TSC_ID: " TSC_ID
-		check_number $TSC_ID
-		[ $? -eq 0 ] && break
-	done
-
-
-
-
-	while true; do
-		read -p "Please enter MSO_IP: " MSO_IP
-		check_ip $MSO_IP
-		[ $? -eq 0 ] && break
-	done
-
-	read -p "DMR mode 1 for dmr and 0 for pdt :" DMR
-	check_number $DMR
-	if [ $? -ne 0  ] ; then
-		DMR=0
-	fi
-
-	if [ $DMR -gt 1 ] ; then
-		DMR=0
-		echo "input ERROR and set with PDT"
-	fi
+elif [ $# == 0 ];then
+	config
+else
+	print_usage
 fi
 
 if [ -e $cur/VOS.Config.db ] ; then
