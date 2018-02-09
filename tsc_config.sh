@@ -97,6 +97,7 @@ show_config(){
 		OM_SERVER_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SERVER_IP'")
 		OM_SLAVE_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SLAVE_IP'")
 		AGETN_TSC_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='AGENT_IP'")
+		TSC_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ExtraNetIP'")
 		AGENT_TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='TSC_ID'")
 		TSC_TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ID'")
 		TRT=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='VOS/SERVICES/IServices/TRT' and Key='36:28672'")
@@ -105,8 +106,9 @@ show_config(){
 		echo "OM_SLAVE_IP  " $OM_SLAVE_IP
 		echo "AGETN_TSC_IP " $AGETN_TSC_IP
 		echo "AGENT_TSC_ID " $AGENT_TSC_ID
+		echo "TSC_IP	   " $TSC_IP
 		echo "TSC_ID       " $TSC_TSC_ID
-		echo "TSC:MSO_IP   " $TRT
+		echo "TRT		   " $TRT
 		echo "DMR MODE     " $DMR
 		echo	"-------------------------------------------------------"
 		exit
