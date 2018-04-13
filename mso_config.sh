@@ -8,6 +8,9 @@ echo "--------------------------------------------------------"
 ###############################################################
 datename=$(date +%Y%m%d-%H%M%S) 
 cur='/opt/local/bin/VOS/cur/data'
+#cur='/root'
+#cur=$(pwd)
+#(){}有别
 CRT_PORT=0x6000
 check_number(){
 	local ID=$1
@@ -47,6 +50,14 @@ else
 	exit
 fi
 
+OLD_MSO_IP='20.0.2.2'
+CRT_IP_STRING=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='VOS/SERVICES/IServices/CRT'and Key='51:0x3000'")
+
+#2/false/20.0.2.2:6088/20.0.0.2:8000	
+#转义/太麻烦，放弃了 用#替代/
+OLD_MSO_IP=`echo $CRT_IP_STRING | sed s#^.*false/##g | sed s/:.*$//g |sed s/[[:space:]]//g`
+#echo "old ip " $OLD_MSO_IP 
+#echo "new ip " $MSO_IP
 
 while true; do
 	read -p "Please enter system id: " systemid
@@ -54,7 +65,11 @@ while true; do
 	[ $? -eq 0 ] && break
 done
 
-
+while true; do
+	read -p "Dial Plan [3,4,5,6,8] :" DialPlan
+	check_number $DialPlan
+	[ $? -eq 0 ] && break
+done
 
 read -p "DMR mode [1:DMR][0:PDT] :" DMR
 check_number $DMR
@@ -91,7 +106,7 @@ echo "---------------sqlite3 running--------------"
 sqlite3 $cur/VOS.Config.db <<EOF
 /*Log counts*/
 insert or replace INTO Tbl_Config (PID,Tag,Key,Value,Comment) VALUES(0,"VOS", "LOGVIEW/MAXCOUNT","10","");
-update Tbl_Config set value = replace (value,'20.0.2.2','$MSO_IP');
+update Tbl_Config set value = replace (value,'$OLD_MSO_IP','$MSO_IP');
 /*PSTN*/
 update Tbl_Config set Value='$PSTN_IP:5060'           where  Tag='PSTNGW'and Key='PSTNIp';
 /*MTU*/
@@ -102,6 +117,8 @@ update Tbl_Config set Value='$systemid'           where  Tag='MSO'and Key='Syste
 update Tbl_Config set Value='$DMR'           where  Tag='MSO'and Key='DMRCmptMode';
 /* Call Mode*/
 update Tbl_Config set Value='$CallMode'      where  Tag='SAG' and Key='SYS_MODE';
+/* Dial Plan 6.5*/
+update Tbl_Config set Value='$DialPlan'	where Tag='MSO' and Key='DialPlan';
 /*SAG*/
 update Tbl_Config set value = replace (value,'192.168.20.96','$MSO_IP');
 /*SPGP*/
