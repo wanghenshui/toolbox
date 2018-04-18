@@ -1,2 +1,2 @@
 # lazy_scripts
-config or something 
+dumb scripts
