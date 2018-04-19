@@ -11,7 +11,8 @@ import time #sleep
 now = time.strftime("%Y-%m-%d-%H-%M-%S")
 
 local_dir=os.getcwd()
-remote_dir='/opt/local/bin/VOS/cur/' 
+#remote_dir='/opt/local/bin/VOS/cur/'
+remote_dir='/opt/cur/'
 username='root'  
 password='vos'  
 ppc_password=''
@@ -20,7 +21,9 @@ port=22
 fmt = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s][%(lineno)d]--%(message)s')
 LOG_FILE = 'autoupload.log'  
 
-
+def remove_back_slash(string):
+    if string[-1] is '/':
+        return string[:-1]
 
 
 class ShellHandler:
@@ -75,7 +78,7 @@ def upload(local_dir,remote_dir,hostname):
     sh=ShellHandler(hostname,username,password)
     
     
-    cmd = 'mv ' + remote_dir  +' /opt/local/bin/VOS/cur-'+str(now)+'/'
+    cmd = 'mv ' + remote_dir  + ' ' +remove_back_slash(remote_dir)+ '-'+str(now)+'/'
     print (cmd)
     sh.execute(cmd)
     
