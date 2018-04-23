@@ -11,8 +11,8 @@ import time #sleep
 now = time.strftime("%Y-%m-%d-%H-%M-%S")
 
 local_dir=os.getcwd()
-#remote_dir='/opt/local/bin/VOS/cur/'
-remote_dir='/opt/cur/'
+remote_dir='/opt/local/bin/VOS/cur/'
+#remote_dir='/opt/cur/'
 username='root'  
 password='vos'  
 ppc_password=''

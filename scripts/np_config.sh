@@ -63,7 +63,8 @@ while true; do
 	check_number $TSC_ID
 	[ $? -eq 0 ] && break
 done
-ETSC1_ID=$[TSC_ID+61440]
+
+let ETSC1_ID=$TSC_ID+61440
 
 while true; do
 	read -p "Please enter OM_IP: " OM_IP
