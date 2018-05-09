@@ -1,9 +1,9 @@
 #!/bin/sh
 #if it does't work, dos2unix file and chmod 
 
-echo "--------------------------------------------------------"
-echo "|TSC ip config script ,and use for version 5.1 6.0 6.1 |"
-echo "--------------------------------------------------------"
+echo "-------------------------------------------------"
+echo "|TSC ip config script ,and use for all version  |"
+echo "-------------------------------------------------"
 
 #######
 #tool
@@ -24,8 +24,19 @@ print_usage(){
 	exit
 }
 
-datename=$(date +%Y%m%d-%H%M%S) 
-cur='/opt/local/bin/VOS/cur/data'
+datename=$(date +%Y%m%d-%H%M%S)
+
+check_data_dir_exist(){
+	if [ -d "/opt/local/bin/VOS/cur/data" ];then
+		DIR="/opt/local/bin/VOS/cur/data"
+	else
+		DIR="/opt/local/bin/VOS/cur"
+	fi
+	echo "Config.db in" $DIR
+}
+
+check_data_dir_exist
+
 check_number(){
 	local ID=$1
 	if [ -n "$(echo $1| sed -n "/^[0-9]\+$/p")" ];then 
@@ -93,14 +104,14 @@ config(){
 show_config(){
 	#dup
 		echo	"--------------------show configuration----------------"
-		DMR=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='TSC'and Key='DMRCmptMode'")
-		OM_SERVER_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SERVER_IP'")
-		OM_SLAVE_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SLAVE_IP'")
-		AGETN_TSC_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='AGENT_IP'")
-		TSC_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ExtraNetIP'")
-		AGENT_TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='TSC_ID'")
-		TSC_TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ID'")
-		TRT=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='VOS/SERVICES/IServices/TRT' and Key='36:28672'")
+		DMR=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config where  Tag='TSC'and Key='DMRCmptMode'")
+		OM_SERVER_IP=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SERVER_IP'")
+		OM_SLAVE_IP=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SLAVE_IP'")
+		AGETN_TSC_IP=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='AGENT_IP'")
+		TSC_IP=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ExtraNetIP'")
+		AGENT_TSC_ID=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='TSC_ID'")
+		TSC_TSC_ID=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='TSC'and Key='TSC_ID'")
+		TRT=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='VOS/SERVICES/IServices/TRT' and Key='36:28672'")
 		
 		echo "OM_SERVER_IP " $OM_SERVER_IP
 		echo "OM_SLAVE_IP  " $OM_SLAVE_IP
@@ -124,10 +135,10 @@ fi
 if [ $# -eq 2 ]; then
 ### $2 is key and $3 is value
 	echo "------------------sqlite3 selecting---------------------"
-	DMR=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='TSC'and Key='DMRCmptMode'")
-	MSO_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SERVER_IP'")
-	TSC_IP=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='AGENT_IP'")
-	TSC_ID=$(sqlite3 $cur/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='TSC_ID'")
+	DMR=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config where  Tag='TSC'and Key='DMRCmptMode'")
+	MSO_IP=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config where  Tag='Agent'and Key='OM_SERVER_IP'")
+	TSC_IP=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='AGENT_IP'")
+	TSC_ID=$(sqlite3 $DIR/VOS.Config.db "select Value from Tbl_Config  where  Tag='Agent'and Key='TSC_ID'")
 
 	
 	if [ $1 == "TSC_IP" ]; then
@@ -163,8 +174,8 @@ else
 	print_usage
 fi
 
-if [ -e $cur/VOS.Config.db ] ; then
-	cp $cur/VOS.Config.db $cur/VOS.Config.db.$datename.bak
+if [ -e $DIR/VOS.Config.db ] ; then
+	cp $DIR/VOS.Config.db $DIR/VOS.Config.db.$datename.bak
 else
 	echo "db doesn't exist"
 	exit
@@ -177,7 +188,7 @@ echo "--------------------------------------------------------"
 		echo "DMR MODE" $DMR
 echo "--------------------------------------------------------"	
 echo "------------------sqlite3 updating----------------------"
-sqlite3 $cur/VOS.Config.db <<EOF
+sqlite3 $DIR/VOS.Config.db <<EOF
 insert or replace into Tbl_Config (PID,Tag,Key,Value,Comment) VALUES(0,"VOS", "LOGVIEW/MAXCOUNT","10","");
 update Tbl_Config set Value='0xff004f1f' where Tag='VOS' and Key='LOG/LOGLEVEL';
 update Tbl_Config set Value='2/true/$TSC_IP:8000/$MSO_IP:6088' where Tag='VOS/SERVICES/IServices/TRT'  and Key='23:0';
