@@ -149,17 +149,13 @@ source $VIMRUNTIME/mswin.vim
 
 behave mswin
 
- 
-
+set nobackup
+set nowritebackup
+set noundofile
 "设置自动备份
 
 if has("vms")
-
     set nobackup
-
-else
-
-        set backup
-
+"else
+"    set backup
 endif
-
