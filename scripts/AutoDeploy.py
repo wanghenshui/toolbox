@@ -12,6 +12,39 @@ import configparser
 
 now = time.strftime("%Y-%m-%d-%H-%M-%S")
 
+
+##-------------conf file---------------------
+
+CONFIG_STR = '''[COMM]
+SERVER_IP = 20.0.2.2
+[TSC]
+TSC_ID = 1
+MSO_IP = 20.0.2.2
+DMR = 0
+
+[MSO]
+SystemID = 40706
+DMR = 0
+PSTN_IP = 20.0.2.73
+CallMode = 3
+DialPlan = 3
+TSC1_ID =1
+TSC1_IP = 20.0.0.2
+TSC2_ID =2
+TSC2_IP = 20.0.0.10
+TSC3_ID =3
+TSC3_IP = 20.0.0.18
+'''
+
+# gen AutoDeploy.ini in this folder
+def get_config_file():
+    full_name = os.getcwd() + '\\' + 'AutoDeploy.ini'
+    if not os.path.isfile(full_name):
+        conf = open(full_name,'w')
+        conf.write(CONFIG_STR)
+        conf.close()
+
+
 ##--------------log color--------------------
 def add_coloring_to_emit_windows(fn):
         # add methods we need to the class
@@ -580,6 +613,7 @@ if __name__ == '__main__':
     print(u'如果是TSC文件或MSO文件请确保AutoDeploy.ini内容配置正确')
     print(u'如果闪退把日志rtx:w18858 Or skype:wangqw2ee@outlook.com')
     set_logcolor()
+    get_config_file()
     t_start=time.time()
 	
     config=configparser.ConfigParser()
