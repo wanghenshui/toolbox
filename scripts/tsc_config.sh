@@ -204,4 +204,6 @@ update Tbl_Config set Value='$TSC_IP'  where  Tag='Agent'and Key='AGENT_IP';
 update Tbl_Config set Value='$TSC_ID'        where  Tag='Agent'and Key='TSC_ID';
 EOF
 
-echo "-------------------------finished-----------------------"
+echo  "-------------------------finished-----------------------" 
+echo -e 'DB Changed by config.sh!!!!! Reset VOS!!!'| wall
+VOS-Reset

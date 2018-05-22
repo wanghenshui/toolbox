@@ -171,3 +171,5 @@ done
 
 
 echo '----------------finished------------------'
+echo -e 'DB Changed by config.sh!!!!! Reset VOS!!!'| wall
+VOS-Reset
