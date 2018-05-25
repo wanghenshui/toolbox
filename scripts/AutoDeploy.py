@@ -513,22 +513,24 @@ update Tbl_Config set key="4:$TSC3_ID" where tag = "VOS/SERVICES/IServices/CRT" 
         conn.close()
     
 class DbFiles(FolderContainsBase):
-    def backup(self):
-        log.info('DbFiles backup')
-        self.backupfolder(remote_db_dir)
-        self.backupfolder(remote_path_dir)
-        
-    def upload(self):
-        log.info('DbFiles upload')
-        self.base_upload(local_dir,remote_db_dir)
-        self.base_upload(local_remotepath_dir,remote_path_dir)
-        
-    def invoke(self):
-        log.info('DbFiles invoke')
-        #启动mysql
-        log.info('-----start mysql-----')
-        self.ssh.exec_command("/etc/init.d/services/mysql start")
-        time.sleep(0.5)
+
+    db_backup_dir = '/opt/local/bin/VOS/db/db_backup/'
+    db_install_dir = remote_db_dir
+
+    def backup_db(self):
+        log.info('-----backup db -----')
+        std_in,std_out,_ =self.ssh.exec_command(\
+            'cp ' +self.db_install_dir + 'backup_* '+ self.db_backup_dir+'; \
+            cp - r '+self.db_install_dir+'statistic/ ' + self.db_backup_dir+'; \
+            cp ' + self.db_install_dir+'delete_back_up ' + self.db_backup_dir+'; \
+            chmod 777 '+self.db_backup_dir+'*;\
+            dos2unix '+self.db_backup_dir+'backup_*;\
+            dos2unix '+self.db_backup_dir+'delete_backup;\
+            dos2unix '+self.db_backup_dir+'statistic/*')
+        for x in std_out.readlines():
+            log.info(x.strip("\n"))
+
+    def install_db(self):
         log.info('-----install db -----')
         std_in,std_out,_ = self.ssh.exec_command(\
             'cd ' +remote_db_dir+';\
@@ -542,8 +544,29 @@ class DbFiles(FolderContainsBase):
         std_in.write('1'+'\n')
         log.info('----install message -----')
         for x in std_out.readlines():
-            log.info(x.strip("\n"))
+            log.info(x.strip("\n"))        
+        
+    def backup(self):
+        log.info('DbFiles backup')
+        self.backupfolder(remote_db_dir)
+        self.backupfolder(remote_path_dir)
+        
+    def upload(self):
+        log.info('DbFiles upload')
+        self.base_upload(local_dir,remote_db_dir)
+        self.base_upload(local_remotepath_dir,remote_path_dir)
+        
+    def invoke(self):
 
+        log.info('DbFiles invoke')
+        #启动mysql
+        log.info('-----start mysql-----')
+        self.ssh.exec_command("/etc/init.d/services/mysql start")
+        time.sleep(0.5)
+        self.backup_db()
+        time.sleep(0.5)
+        self.install_db()
+        time.sleep(0.5)
         
         self.ssh.exec_command(\
             'cd /opt/remotepath/;\
