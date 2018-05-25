@@ -149,7 +149,7 @@ def set_logcolor():
 ##------------ logging-----------------------
 
 fmt = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s][%(lineno)d]--%(message)s')
-LOG_FILE = 'upload-'+now+'.log'  
+LOG_FILE = 'AutoDeploy-'+now+'.log'  
 log=logging.getLogger()
 log.setLevel(logging.DEBUG)
                                 
@@ -211,6 +211,9 @@ class FolderContainsBase(object):
         pass
     def invoke(self):
         pass
+
+    def cleanup(self):
+        self.ssh.exec_command('rm -rf /opt/local/bin/VOS/cur/AutoDeploy* ')
 #-------derived class implement end------
 
     def remove_back_slash(self,string):
@@ -375,7 +378,7 @@ update Tbl_Config set Value='$TSC_ID'        where  Tag='Agent'and Key='TSC_ID';
         sqlstr=sqlstr.replace('$TSC_IP',TSC_IP)
         sqlstr=sqlstr.replace('$TSC_ID',TSC_ID)
         sqlstr=sqlstr.replace('$DMR',DMR)
-        
+        log.debug(sqlstr)
         conn.executescript(sqlstr)
         conn.commit()
         conn.close()
@@ -507,7 +510,7 @@ update Tbl_Config set key="4:$TSC3_ID" where tag = "VOS/SERVICES/IServices/CRT" 
         sqlstr=sqlstr.replace('$TSC1_ID',TSC1_ID)
         sqlstr=sqlstr.replace('$TSC2_ID',TSC2_ID)
         sqlstr=sqlstr.replace('$TSC3_ID',TSC3_ID)
-        #log.info(sqlstr)
+        log.debug(sqlstr)
         conn.executescript(sqlstr)
         conn.commit()
         conn.close()
@@ -555,6 +558,7 @@ class DbFiles(FolderContainsBase):
         log.info('DbFiles upload')
         self.base_upload(local_dir,remote_db_dir)
         self.base_upload(local_remotepath_dir,remote_path_dir)
+        self.base_upload(local_mycnf_dir,'/etc/')
         
     def invoke(self):
 
@@ -562,6 +566,7 @@ class DbFiles(FolderContainsBase):
         #启动mysql
         log.info('-----start mysql-----')
         self.ssh.exec_command("/etc/init.d/services/mysql start")
+        self.ssh.exec_command('dos2unix /etc/my.cnf')
         time.sleep(0.5)
         self.backup_db()
         time.sleep(0.5)
@@ -573,18 +578,31 @@ class DbFiles(FolderContainsBase):
             chmod 777 *;\
             dos2unix hss_tsc;\
             dos2unix offline_bill')
+
+        
+    def cleanup(self):
+        self.ssh.exec_command('rm -rf /opt/local/bin/VOS/db/db_install/remotepath/')
+        self.ssh.exec_command(' rm -rf /opt/local/bin/VOS/db/db_install/AutoDeploy*')
+        self.ssh.exec_command('rm -rf /opt/local/bin/VOS/db/db_install/mycnf/')
         
     def prepare(self):
         log.info('DbFiles prepare')
-        file_list = ["hss_tsc","sqlite3","offline_bill","tsc.db","my.cnf"]
+        file_list = ["hss_tsc","sqlite3","offline_bill","tsc.db"]
+        if os.path.exists(local_mycnf_dir) is False:
+            os.mkdir(local_mycnf_dir)
+            if os.path.isfile(local_dir + "\\my.cnf"):
+                shutil.copyfile(local_dir + "\\my.cnf",local_mycnf_dir + "\\my.cnf")
+            else:
+                log.error("my.cnf missing!! ")
         if os.path.exists(local_remotepath_dir) is False:
-                os.mkdir(local_remotepath_dir)
-                for f in file_list:
-                        if os.path.isfile(local_dir+"\\" + f):
-                                shutil.copyfile(local_dir+"\\" + f,local_remotepath_dir+"\\"+f)
-                        else:
-                                log.error("check "+f+" !! missing")
-                                log.warn(u'请确保tsc.db在文件夹内，否则得你自己上传')
+            os.mkdir(local_remotepath_dir)
+            for f in file_list:
+                    if os.path.isfile(local_dir+"\\" + f):
+                            shutil.copyfile(local_dir+"\\" + f,local_remotepath_dir+"\\"+f)
+                    else:
+                            log.error("check "+f+" !! missing")
+                            log.warn(u'请确保tsc.db在文件夹内，否则得你自己上传')
+
         
 class AutoDeploy(FolderContainsBase):
     instance=None
@@ -613,6 +631,7 @@ class AutoDeploy(FolderContainsBase):
         self.backup()
         self.upload()
         self.invoke()
+        self.cleanup()
 
     def backup(self):
        self.instance.backup()
@@ -626,6 +645,8 @@ class AutoDeploy(FolderContainsBase):
     def prepare(self):
         self.instance.prepare()
 
+    def cleanup(self):
+        self.instance.cleanup()
 
 if __name__ == '__main__':
     print('-------------------------------------------')
