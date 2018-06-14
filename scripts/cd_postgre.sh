@@ -1,0 +1,1 @@
+cd "\Program Files\PostgreSQL\10\bin"
