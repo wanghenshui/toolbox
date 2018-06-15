@@ -2,6 +2,33 @@
 # coding=utf-8
 #   头文件比对工具,头文件太TM乱了
 #   使用方法 path.ini里写好common头文件和本地头文件目录，点击执行
+CONFSTR='''
+;使用方法
+;安装python3.0以上的版本
+;[common]写common目录 [local]写本地common 目录
+;双击compare_com.py即可
+;
+[common]
+dir = E:\cccc
+
+[local]
+dir = E:\Br_R6.5_r2676_\COMM
+'''
+class configfile:
+    import os
+    file_name = os.getcwd() + '\\' + 'path.ini'
+
+    def detail(self):
+        return CONFSTR
+    
+    def is_conf_exist(self):
+        return self.os.path.isfile(self.file_name)
+    
+    def __init__(self):
+        if self.is_conf_exist() is not True:
+            f = open(self.file_name,'w')
+            f.write(self.detail())
+            f.close()
 
 #parser ini
 import configparser
@@ -92,11 +119,12 @@ def compare_comm(common_d,local_d):
 
 if __name__ == "__main__":
     print(u'------TSC头文件比对工具--------')
+	c=configfile()
     print(u'确保以下目录是正确的：')
     print (u'    公共头文件目录: ',common_dir)
     print (u'    本地common目录: ',local_dir)
     print ("")
-
+	
     print(u"比对开始！")
     compare_comm(common_dir,local_dir)
     print(u"比对结束！")
