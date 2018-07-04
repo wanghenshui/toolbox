@@ -10,6 +10,8 @@ from tkinter.filedialog import askdirectory
 from tkinter import messagebox
 
 root = Tk()
+root.resizable(width = False, height = False)
+
 path_local = StringVar()
 path_comm = StringVar()
 
@@ -114,10 +116,13 @@ def compare_comm(common_d,local_d,merge_flag=False):
     if merge_flag is True:
         for d in dif[1]:
             shutil.copyfile(Common_Type+d,COMM_H+d)
-
+    
     if len(ans)==0:
-        ans="没有不同"
-    messagebox.showinfo("比对结果",ans)
+        messagebox.showinfo("比对结果","没有不同")
+    else:
+        messagebox.showinfo("比对结果",ans)
+    if merge_flag is True and len(ans)!=0:
+        messagebox.showinfo("合并",'已经将上述文件合并到 '+local_d)
     
         
 
