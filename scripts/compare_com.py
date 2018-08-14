@@ -152,13 +152,3 @@ Button(root,text="选择路径",command = select_comm_path).grid(row=1,column=2)
 Button(root,text="比对",command = compare).grid(row=0,column=3)
 Button(root,text="合并",command = merge).grid(row=1,column=3)
 root.mainloop()
-
-
-
-
-
-
-    
-
-
-    
