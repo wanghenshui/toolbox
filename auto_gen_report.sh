@@ -19,7 +19,8 @@ PLOT_SAR_LOG=${PWD}'/plotSarlog.py'
 #	function get_pyscripts
 #	生成脚本，内容是处理sar日志 需要提前安装好 matplotlib 和sar-viz 
 #	安装 pip 或直接在github上下载然后python setup.py install即可
-#	注意，sar-viz是python 2.*版本，matplotlib需要安装2.2的版本
+#	注意，sar-viz默认匹配python2，matplotlib需要安装2.2的版本
+#	python3需要找对应的sarviz和matplotlib3版本，在github上都能找到
 
 function gen_plot_sarlog(){
 	if [ ! -f ${PLOT_SAR_LOG} ];then
