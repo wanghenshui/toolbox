@@ -2,20 +2,22 @@
 #set -x
 #add to crontab
 
-#输入实例，获取实例的节点id和名字和角色
-#遍历登录
-#登录，取回最新的sa 文件，重命名为节点-角色-id
-#调用分析脚本，生成pdf
-
+readonly PROGNAME=$(basename $0)
+readonly PROGDIR=$(readlink -m $(dirname $0))
+readonly ARGS="$@"
 
 #Config Info
-CONN_NODE_PATH="/home/rds/wqw/"
-CONN_NODE=${CONN_NODE_PATH}"conn_node.sh"
-DST_LOG_PATH=${PWD}'/sar_log'
-SRC_LOG_PATH='/var/log/sa'
-REPORT_PATH=${PWD}
-PLOT_SAR_LOG=${PWD}'/plotSarlog.py'
-
+readonly CONN_NODE_PATH="/home/rds/wqw/"
+readonly CONN_NODE=${CONN_NODE_PATH}"conn_node.sh"
+readonly DST_LOG_PATH=${CONN_NODE_PATH}'/sar_log'
+readonly SRC_LOG_PATH='/var/log/sa'
+readonly REPORT_PATH=${CONN_NODE_PATH}
+readonly REPORT_INFO=${DST_LOG_PATH}'/node_info.txt'
+readonly PLOT_SAR_LOG=${CONN_NODE_PATH}'/plotSarlog.py'
+readonly GEN_SAR_CSV=${CONN_NODE_PATH}"/genSarcsv.py"
+readonly CHECK_SAR_METRIC=${CONN_NODE_PATH}"parserCsv.py"
+readonly CPU_METRCI=30
+#	deprecated
 #	function get_pyscripts
 #	生成脚本，内容是处理sar日志 需要提前安装好 matplotlib 和sar-viz 
 #	安装 pip 或直接在github上下载然后python setup.py install即可
@@ -23,9 +25,9 @@ PLOT_SAR_LOG=${PWD}'/plotSarlog.py'
 #	python3需要找对应的sarviz和matplotlib3版本，在github上都能找到
 
 function gen_plot_sarlog(){
-	if [ ! -f ${PLOT_SAR_LOG} ];then
+	if [ ! -f "${PLOT_SAR_LOG}" ];then
 #		echo ${PLOT_SAR_LOG_SCRIPTS} > ${PLOT_SAR_LOG}
-cat <<EOF > ${PLOT_SAR_LOG}
+cat <<EOF > "${PLOT_SAR_LOG}"
 import sys
 from sar import parser
 from sar import viz
@@ -36,6 +38,127 @@ EOF
 
 	fi
 }
+
+
+#	function gen_csv_sarlog
+#	生成脚本，内容是处理sar日志 生成csv
+
+function gen_csv_sarlog(){
+	if [[ ! -f "${GEN_SAR_CSV}" ]];then
+
+cat <<EOF > "${GEN_SAR_CSV}"
+#!/usr/bin/python -tt
+
+import os
+import sys
+
+def process_lines(lines):
+
+	firstline = lines.pop(0)
+	system = firstline.split()[2][1:-1]
+	date = firstline.split()[3]
+	global_date=firstline.split()[3]
+	cpudata = ''
+	memdata = ''
+	loaddata = ''
+	cpuindex = memindex = loadindex = 0
+
+	for index, data in enumerate(lines):
+		tokens = data.split()
+		if len(tokens) > 2:
+			if tokens[2] == 'CPU':
+				cpuindex = index
+			if tokens[2] == 'kbmemfree':
+				memindex = index
+			if tokens[2] == 'runq-sz':
+				loadindex = index
+	#print cpuindex,memindex,loadindex
+
+	cpudata = process_data(date, lines[cpuindex + 1:])
+	memdata = process_data(date, lines[memindex + 1:])
+	loaddata = process_data(date, lines[loadindex + 1:])
+
+	return (cpudata, memdata, loaddata, system)
+
+def process_data(date, lines):
+
+	data = ''
+	for line in lines:
+		#print line
+		tokens = line.split()
+		#print tokens
+		if len(line) < 2:
+			continue
+		if tokens[0] == 'Average:':
+			break
+		data = data + date + ',' + tokens[0] + ' ' + tokens[1] + ',' + ','.join(tokens[2:]) + '\n'
+	#print data
+	return data
+
+
+def main():
+
+	cpudata = 'Date,Time,CPU,%user,%nice,%system,%iowait,%steal,%irq,%soft%,guest%,%gnice,%idle\n'
+	memdata = 'Date,Time,kbmemfree,kbmemused,%memused,kbbuffers,kbcached,kbcommit,%commit,kbactive,kbinact,kbdirty\n'
+	loaddata ='Date,Time,runq-sz,plist-sz,ldavg-1,ldavg-5,ldavg-15,blocked\n'
+
+	directory = os.path.dirname(os.path.realpath(__file__))
+
+	with open(sys.argv[1]) as f:
+		lines = f.read().splitlines()
+		results = process_lines(lines)
+		cpudata = cpudata + results[0]
+		memdata = memdata + results[1]
+		loaddata = loaddata + results[2]
+
+	with open(os.path.join(directory, sys.argv[1] + '-cpu.csv'), 'w') as f:
+		f.write(cpudata)
+	with open(os.path.join(directory, sys.argv[1] + '-mem.csv'), 'w') as f:
+		f.write(memdata)
+	with open(os.path.join(directory, sys.argv[1] + '-load.csv'), 'w') as f:
+		f.write(loaddata)
+
+
+if __name__ == '__main__':
+	main()
+EOF
+fi
+}
+
+
+
+# Function gen_parser_csv
+function gen_parser_csv(){
+	if [[ ! -f "${CHECK_SAR_METRIC}" ]];then
+cat <<EOF > ${CHECK_SAR_METRIC}
+import csv
+import sys
+
+CPU_METRIC=int(sys.argv[2])
+file=sys.argv[1]
+
+with open(file, "r") as csvFile:
+    reader = csv.reader(csvFile)
+    count=usr=per=0
+    cpudata = ['Date,Time,CPU,%user,%nice,%system,%iowait,%steal,%irq,%soft%,guest%,%gnice,%idle\n']
+    for item in reader:
+        count=count+1
+        if reader.line_num == 1:
+            continue
+
+        if float(item[3]) >= CPU_METRIC:
+            usr=usr+1
+            cpudata=cpudata+list(','.join(item))+['\n']
+    per = (float) (usr) / count
+    if per > 0.0:
+        with open(file+'_cpu_metric_abnormal.txt',"w") as f:
+            f.write(file+" cpu.csv metric is "+ str(per)+'\n')
+            for s in cpudata:
+                f.write(s)
+EOF
+fi
+}
+
 
 #	function chmod_low_CryptPWD
 #	权限问题，把文件权限调低通过登录验证
@@ -48,12 +171,13 @@ function chmod_low_CryptPWD(){
 
 function prepare_log_path(){
 
-	rm -rf ${DST_LOG_PATH}
-	mkdir ${DST_LOG_PATH}
+	rm -rf "${DST_LOG_PATH}"
+	mkdir "${DST_LOG_PATH}"
 }
 #	function process_log 
 #	
-#	@param $1 nodeId
+#	@param $1 nodeId $2 date d, default TODAY
+#	FIXME:process_log 需要拿任意一天的， 这个最好加个参数
 function process_log(){
 
 	#last_day=$(date -d last-day +%Y%m%d)
@@ -62,18 +186,36 @@ function process_log(){
 		#for file_ in /var/log/sa/*; do
 			#file_time=$(stat ${file_} | grep Modify | awk '{print $2}' | sed 's/-//g')
 			#if [ ${last_day} \< ${file_time} ] ;then
-	nodeId=$1
+	local nodeId=$1
+	local DATA_PATTERN='^((0?[1-9])|((1|2)[0-9])|30|31)$'
+	if [[ $# -gt 2 && $2 =~ ${DATA_PATTERN} ]];then
+		local day=$2
+	else
+		local day=$(date +%d)
+	fi
+	
 	#binary
-	file_=${SRC_LOG_PATH}'/sa'$(date +%d)
+	file_=${SRC_LOG_PATH}'/sa'${day}
 	#sar usually missed, pass
 	#file_r=${SRC_LOG_PATH}'/sar'$(date +%d)
-	${CONN_NODE} connect ${nodeId} pull ${file_} ${DST_LOG_PATH}/${nodeId}.${file_##*/}.b
-	sar -A -f ${DST_LOG_PATH}/${nodeId}.${file_##*/}.b > ${DST_LOG_PATH}/${nodeId}.${file_##*/}.log
-	rm -rf ${DST_LOG_PATH}/${nodeId}.${file_##*/}.b
+set -x
+	${CONN_NODE} connect "${nodeId}" pull "${file_}" "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".b
+	sar -A -f "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".b > "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".log
+	rm -rf "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".b
 	#${CONN_NODE} connect ${nodeId} pull ${file_r} ${DST_LOG_PATH}/${nodeId}.${file_r##*/}.log
 	
 	#step 2 build report
-	python ${PLOT_SAR_LOG} ${DST_LOG_PATH}/${nodeId}.${file_##*/}.log ${DST_LOG_PATH}/${nodeId}.${file_##*/}.log.pdf
+	#python "${PLOT_SAR_LOG}" "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".log "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".log.pdf
+	python "${GEN_SAR_CSV}" "${DST_LOG_PATH}"/"${nodeId}"."${file_##*/}".log
+set x
+}
+# Function extract_infomation 
+# check if value is abnormal, build a report
+function extract_information(){
+	for file__ in "${DST_LOG_PATH}"/*-cpu.csv;do
+		python "${CHECK_SAR_METRIC}" "${file__}" "${CPU_METRCI}"
+	done
+	cp -r "${DST_LOG_PATH}"/*.txt ${REPORT_PATH}
 }
 
 #	function zip report
@@ -81,8 +223,9 @@ function process_log(){
 function zip_report(){
 	#TODO:step 3 tar, chmod for download 
 	datename=$(date +%Y%m%d-%H%M%S)
-	tar -czvf ${REPORT_PATH}/report.${datename}.tar.gz ${DST_LOG_PATH}/*.pdf
-	chmod 777 ${REPORT_PATH}/report.*
+	cd "${DST_LOG_PATH}"
+	tar -czvf "${REPORT_PATH}"/report."${datename}".tar.gz *.log *.csv node_info.txt
+	chmod 777 "${REPORT_PATH}"/report.*
 }
 
 #	function #	function pull_log_from_node
@@ -91,30 +234,35 @@ function zip_report(){
 #   @ret   nodesid, nodesid_name,role
 function get_nodeId_from_instanceId()
 {
-	${CONN_NODE} showNodesId $1 |awk '{print $1,$3,$7}' | sed '1,2d'|head -n -2;
+	${CONN_NODE} showNodesId "$1" > ${REPORT_INFO}
+	${CONN_NODE} showNodesId "$1" |awk '{print $1,$3,$7}' | sed '1,2d'|head -n -2;
 }
 
 #	function usage
 #	miss instanceID then notice IT
 function usage(){
-	if [ $# -ne 1 ];then
-		echo -e "\033[31m Usage: ./auto_gen_report dbinstanceID   \033[0m"
+	if [ $# -gt 2 ];then
+		echo -e "\033[31m Usage: sh "${PROGNAME}" dbinstanceID get today's  log \033[0m"
+		echo -e "\033[31m Usage: sh "${PROGNAME}" dbinstanceID 20 get day20 log \033[0m"
 		exit
 	fi
 }
 
 
 function main(){
-	usage $@
+	usage "$@"
 	chmod_low_CryptPWD
 	prepare_log_path
-	gen_plot_sarlog
-	nodes=$(get_nodeId_from_instanceId $1 )
+	#gen_plot_sarlog
+	gen_csv_sarlog
+	gen_parser_csv
+	nodes=$(get_nodeId_from_instanceId "$1" )
 	#第一列是nodeid 第二列是id名称 第三列是角色
-	for nd in $(echo ${nodes} | tr ' '  '\n' |sed -n '1~3p');do
-		process_log ${nd} 
-	done	
+	for nd in $(echo "${nodes}" | tr ' '  '\n' |sed -n '1~3p');do
+		process_log "${nd}" "$2"
+	done
+	extract_information
 	zip_report
 }
 
-main $@ 
+main "$@"
