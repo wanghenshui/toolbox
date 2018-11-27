@@ -7,7 +7,7 @@ readonly PROGDIR=$(readlink -m $(dirname $0))
 readonly ARGS="$@"
 
 #Config Info
-readonly CONN_NODE_PATH="/home/rds/wqw/"
+readonly CONN_NODE_PATH=${PWD}"/"
 readonly CONN_NODE=${CONN_NODE_PATH}"conn_node.sh"
 readonly DST_LOG_PATH=${CONN_NODE_PATH}'/sar_log'
 readonly SRC_LOG_PATH='/var/log/sa'
@@ -16,7 +16,7 @@ readonly REPORT_INFO=${DST_LOG_PATH}'/node_info.txt'
 readonly PLOT_SAR_LOG=${CONN_NODE_PATH}'/plotSarlog.py'
 readonly GEN_SAR_CSV=${CONN_NODE_PATH}"/genSarcsv.py"
 readonly CHECK_SAR_METRIC=${CONN_NODE_PATH}"parserCsv.py"
-readonly CPU_METRCI=30
+readonly CPU_METRIC=30
 #	deprecated
 #	function get_pyscripts
 #	生成脚本，内容是处理sar日志 需要提前安装好 matplotlib 和sar-viz 
@@ -213,7 +213,7 @@ set x
 # check if value is abnormal, build a report
 function extract_information(){
 	for file__ in "${DST_LOG_PATH}"/*-cpu.csv;do
-		python "${CHECK_SAR_METRIC}" "${file__}" "${CPU_METRCI}"
+		python "${CHECK_SAR_METRIC}" "${file__}" "${CPU_METRIC}"
 	done
 	cp -r "${DST_LOG_PATH}"/*.txt ${REPORT_PATH}
 }
