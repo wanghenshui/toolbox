@@ -1,2 +1,2 @@
 #!/bin/bash
-cat _vimrc >> /etc/vimrc
+cat _vimrc >> /etc/vim/vimrc
