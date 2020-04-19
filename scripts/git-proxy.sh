@@ -1,0 +1,32 @@
+#!/bin/bash
+
+readonly PROGNAME=$(basename $0)
+readonly PROGDIR=$(readlink -m $(dirname $0))
+readonly ARGS="$@"
+
+
+function usage() {
+
+    cat << EOF
+    usage: $PROGNAME options
+    Program enable/disable git socks proxy
+	need setup socks proxy first
+    OPTIONS:
+       $PROGNAME enable
+       $PROGNAME disable
+EOF
+}
+function main(){
+
+    if [[ $1 == 'enable' ]];then                
+		git config --global http.proxy 'socks5://127.0.0.1:1080'
+		git config --global https.proxy 'socks5://127.0.0.1:1080'
+    elif [[ $1 == 'disable' ]];then
+        git config --global --unset http.proxy
+        git config --global --unset https.proxy
+    else
+        usage
+    fi
+}
+
+main "$@"
