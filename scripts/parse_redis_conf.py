@@ -29,9 +29,16 @@ class RedisConfParser(object):
         value = value + '\n'
         self._kv.update({key:value})
 
+    def get_key(self, key):
+        return self._kv.get(key, None)
+
     def update_subkey(self, pk, sk, value):
         value = value + '\n'
         self._kv.update({pk + ' ' + sk : value})
+        
+    def get_subkey(self, pk, sk):
+        key = pk + ' ' + sk
+        return self._kv.get(key, None)
 
     def dump(self):
         with open(self._file,'w') as f:
@@ -43,5 +50,12 @@ class RedisConfParser(object):
 
 c = RedisConfParser("./redis.conf")
 c.dump()
+print(c.get_key("bind"))
+print(c.get_subkey("save", "300"))
+print(c.get_key("blah"))
 
+c.update_key("ohio", "wtf")
+c.update_subkey("if", "then", "else")
+print(c.get_key("ohio"))
+print(c.get_subkey("if", "then"))
 
