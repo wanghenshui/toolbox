@@ -152,6 +152,13 @@ behave mswin
 set nobackup
 set nowritebackup
 set noundofile
+
+set hlsearch    " highlight all search results
+set ignorecase  " do case insensitive search 
+set incsearch   " show incremental search results as you type
+set number      " display line number
+set noswapfile  " disable swap file
+
 "设置自动备份
 
 if has("vms")
