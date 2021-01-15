@@ -3,18 +3,17 @@ readonly PROGNAME=$(basename $0)
 readonly ARGS="$@"
 
 function check_number(){
-	local ID=$1
-	if [ -n "$(echo $1| sed -n "/^[0-9]\+$/p")" ];then 
-		return 0
-	else 
-		echo 'Number Error' 
-		return 1
-	fi 
+    local ID=$1
+    if [ -n "$(echo $1| sed -n "/^[0-9]\+$/p")" ];then 
+	return 0
+    else 
+	echo 'Number Error' 
+	return 1
+    fi 
 }
 
 
 function usage() {
-
     cat << EOF
     usage: $PROGNAME name email
     set git config name and email and default setting
