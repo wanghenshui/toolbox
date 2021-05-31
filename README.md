@@ -1,2 +1,1 @@
-# dotfiles 
-and some dumb scripts
+Old staff, backup and never use it again
