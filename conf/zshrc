@@ -99,3 +99,54 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/usr/local/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
+        . "/usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh"
+    else
+        export PATH="/usr/local/Caskroom/miniconda/base/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+if [ -f /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+    source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+if [ -f /usr/local/bin/fuck ]; then
+    eval $(thefuck --alias)
+fi
+export HISTIGNORE='pwd:exit:fg:bg:top:clear:history:ls:uptime:df'
+export HISTCONTROL=ignorespace
+export HISTSIZE=10000
+
+#git config --global user.email ${email}
+#git config --global user.name ${name}
+git config --global credential.helper store
+git config --global push.default current
+git config --global pull.rebase true
+git config --global color.status auto           # 使 git status -s 命令的输出带有颜色。
+git config --global color.diff auto             # 使 git diff 命令的输出带有颜色。
+git config --global color.branch auto           # 使 git branch -a 命令的输出带有颜色。
+git config --global color.interactive true      # 使 git add -i 命令的输出带有颜色。
+git config --global core.autocrlf input         # 别把 CR LF 提交到服务器上。
+git config --global push.default simple         # 仅 push 当前分支。
+git config --global pull.ff only                # 禁用非 --ff-only 的 pull 操作。
+git config --global merge.ff only               # 禁用非 --ff-only 的 merge 操作
+
+function code_replace() {
+  if [ $# -ne 3 ]; then
+    echo "Usage: $0 old_string new_string  dir_or_file"
+    exit 1
+  fi
+
+  OLD=$1
+  NEW=$2
+  DIR_OR_FILE=$3
+  sed -i "s/$OLD/$NEW/g"  `grep $OLD -rl $DIR_OR_FILE`
+}
