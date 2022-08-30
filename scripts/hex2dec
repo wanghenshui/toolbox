@@ -1,0 +1,15 @@
+#!/bin/bash
+# usage
+# first, hexdump you bin, get the hex, like
+#
+#   hexdump discard.dat                                                                                                                                                                                                      
+#   0000000 40 ea 06 00 00 00 00 00 b8 91 70 df 04 00 00 00                                                                                                                                                                               
+#   0000010 00 00 00 00 00 00 00 00 e5 18 6d 00 00 00 00 00 
+#
+# then, check your endine. little, the forth is 6d18e5
+# 
+#  h2d 6d18e5
+# 
+# get your answer
+echo -n "0x$@="
+echo $((0x$@))
