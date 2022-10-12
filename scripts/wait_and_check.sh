@@ -8,6 +8,6 @@ for pid in $(jobs -p)
 do
 wait $pid
 if [[ $? -ne 0 ]]; then
-  echo "$pid work error"
+  echo "`ps -p ${pid} -o comm=` $pid work error"
   exit 1
 fi
