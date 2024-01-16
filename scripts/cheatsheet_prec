@@ -1,0 +1,12 @@
+#!/bin/bash
+cat <<-EOF
+# vim config
+pre-commit --install
+pre-commit run --all-files
+# pre-commit is failing with "Expected a Config map but got a list"
+# https://stackoverflow.com/questions/75216436/pre-commit-is-failing-with-expected-a-config-map-but-got-a-list
+
+
+pre-commit migrate-config
+
+EOF
