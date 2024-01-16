@@ -1,0 +1,8 @@
+#!/bin/bash
+#URL="github.com"
+
+if [ $# -ne 1 ]; then
+    echo "input url like github.com"
+    exit
+fi
+git config --global url.ssh://git@$1.insteadOf $1
