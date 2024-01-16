@@ -1,0 +1,11 @@
+#! /bin/bash
+
+# github偶尔抽风不稳定，需要修改ssh config
+# https://juejin.cn/post/7129443602379309086
+
+cat <<EOF >> ~/.ssh/config
+Host github.com
+    HostName ssh.github.com
+    User git
+    Port 443
+EOF
