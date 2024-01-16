@@ -1,0 +1,36 @@
+#!/bin/bash
+
+readonly PROGNAME=$(basename $0)
+readonly PROGDIR=$(readlink -m $(dirname $0))
+readonly ARGS="$@"
+
+function usage() {
+
+    cat << EOF
+    usage: $PROGNAME name email
+    set git config name and email and default setting
+EOF
+}
+
+function main() {
+    if [ $# -ne 2 ]; then
+        usage
+        exit
+    fi
+
+    name=$1
+    email=$2
+    str=`echo $email | gawk '/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/{print $0}'`
+    if [ ! -n "${str}" ]
+    then
+        echo "email is not valid."
+        exit
+    fi
+    git config --global user.email ${email}
+    git config --global user.name ${name}
+    git config credential.helper store
+    git config --global push.default current
+    git config pull.rebase true
+}
+
+main $ARGS

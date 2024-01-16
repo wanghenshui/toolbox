@@ -1,0 +1,15 @@
+#!/bin/bash
+
+function install_rust() {
+    echo "rust install"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    source $HOME/.cargo/env
+    echo "source $HOME/.cargo/env" >> "$HOME"/.zshrc
+    cargo install git-delta
+}
+
+read -p "Do you want to install rust" yn
+case $yn in
+    [Yy]* ) install_rust; break;;
+     * ) echo "rust not installed, your choice.";;
+esac
