@@ -1,0 +1,12 @@
+
+#https://github.com/skywind3000/awesome-cheatsheets/blob/master/languages/bash.sh
+# ALT+hjkl/HJKL 快速移动光标，将下面内容添加到 ~/.inputrc 中可作用所有工具，
+# 包括 bash/zsh/python/lua 等使用 readline 的工具，帮助见：info rluserman
+"\eh": backward-char
+"\el": forward-char
+"\ej": next-history
+"\ek": previous-history
+"\eH": backward-word
+"\eL": forward-word
+"\eJ": beginning-of-line
+"\eK": end-of-line
