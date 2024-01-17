@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # usage
 # first, hexdump you bin, get the hex, like
 #
@@ -11,5 +11,5 @@
 #  h2d 6d18e5
 # 
 # get your answer
-echo -n "0x$@="
-echo $((0x$@))
+echo -n "0x$*="
+echo "$((0x$*))"

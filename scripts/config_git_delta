@@ -1,5 +1,5 @@
 
-#!/bin/bash
+#!/usr/bin/env bash
 
 function config_git_delta() {
 cat << EOF >> "$HOME"/.gitconfig

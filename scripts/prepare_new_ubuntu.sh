@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/usr/bin/env bash 
 set -x
 apt install -y vim tmux gcc git g++ ibus-pinyin python3 python3-pip
 

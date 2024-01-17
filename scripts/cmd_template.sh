@@ -1,8 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-readonly PROGNAME=$(basename $0)
-readonly PROGDIR=$(readlink -m $(dirname $0))
-readonly ARGS="$@"
+PROGNAME="$(basename $0)"
+readonly PROGNAME
+PROGDIR="$(readlink -m $(dirname $0))"
+readonly PROGDIR
+ARGS="$@"
+readonly ARGS
 
 function usage() {
     cat <<- EOF

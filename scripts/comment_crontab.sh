@@ -1,10 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-readonly PROGNAME=$(basename $0)
-readonly PROGDIR=$(readlink -m $(dirname $0))
-readonly ARGS="$@"
+PROGNAME="$(basename $0)"
+readonly PROGNAME
+PROGDIR="$(readlink -m $(dirname $0))"
+readonly PROGDIR
+ARGS="$@"
+readonly ARGS
 
-readonly CRONTAB_BACKUP=${PWD}/crontab.bak
+CRONTAB_BACKUP=${PWD}/crontab.bak
+readonly CRONTAB_BACKUP
 
 function usage() {
 

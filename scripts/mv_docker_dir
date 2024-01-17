@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 if [ ! -L "/var/lib/docker" ]; then
   echo "config docker path..."
   mv /var/lib/docker /data/docker

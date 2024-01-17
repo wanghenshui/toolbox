@@ -1,19 +1,16 @@
-#!/bin/bash
-
-readonly PROGNAME=$(basename $0)
-readonly PROGDIR=$(readlink -m $(dirname $0))
-readonly ARGS="$@"
+#!/usr/bin/env bash
+PROGNAME="$(basename $0)"
+readonly PROGNAME
 
 
 function usage() {
-
     cat << EOF
-    usage: $PROGNAME options
+    usage: "$PROGNAME" options
     Program enable/disable git socks proxy
 	need setup socks proxy first
     OPTIONS:
-       $PROGNAME enable
-       $PROGNAME disable
+       "$PROGNAME" enable
+       "$PROGNAME" disable
 EOF
 }
 function main(){

@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 
 # 自动解压：判断文件后缀名并调用相应解压命令

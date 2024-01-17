@@ -127,7 +127,7 @@ export HISTSIZE=10000
 
 function code_replace() {
   if [ $# -ne 3 ]; then
-    echo "Usage: $0 old_string new_string  dir_or_file"
+    echo 'Usage: "$0" old_string new_string  dir_or_file'
     exit 1
   fi
 

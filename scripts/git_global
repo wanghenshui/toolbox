@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 git config --global color.status auto           # 使 git status -s 命令的输出带有颜色。
 git config --global color.diff auto             # 使 git diff 命令的输出带有颜色。

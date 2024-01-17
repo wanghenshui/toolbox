@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 pip3 install pygments
 pip3 install pre-commit

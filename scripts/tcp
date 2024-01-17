@@ -1,3 +1,3 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # 列出所有网络状态：ESTABLISHED / TIME_WAIT / FIN_WAIT1 / FIN_WAIT2 
 netstat -n | awk '/^tcp/ {++tt[$NF]} END {for (a in tt) print a, tt[a]}'

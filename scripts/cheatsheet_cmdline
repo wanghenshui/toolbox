@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 cat << EOF
 CTRL+A              # 移动到行首，同 <Home>\
