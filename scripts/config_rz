@@ -1,0 +1,9 @@
+#!/bin/env bash
+
+git clone git@github.com:wanghenshui/iterm2-zmodem.git
+cd iterm2-zmodem
+cp iterm2-recv-zmodem.sh /usr/local/bin
+cp iterm2-send-zmodem.sh /usr/local/bin
+chmod 777 /usr/local/bin/iterm2-recv-zmodem.sh
+chmod 777 /usr/local/bin/iterm2-send-zmodem.sh
+cd -
