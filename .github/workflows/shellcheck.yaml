@@ -17,5 +17,5 @@ jobs:
         with:
             ignore_paths: >-
               misc
-              ignoreme
+              conf
             ignore_names: ignorable.sh
